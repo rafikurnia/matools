@@ -3,7 +3,7 @@ Tools to automate scaffolding resources setup processes.
 
 ## Installation
 ```bash
-pip install git+ssh://git@github.com:rafikurnia/matools.git
+pip install git+https://github.com/rafikurnia/matools.git
 ```
 
 ## Config File
