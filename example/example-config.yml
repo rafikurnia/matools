@@ -1,0 +1,41 @@
+---
+MatoolsTemplateVersion: 2018-03-15 # This is required. To keep the compatibility with yml parser version
+Description: 'txt accounts setup' # Description of this yml file, nothing to do with Stack Sets or Stack Set Instances
+
+# List of AWS Account IDs where the stack set instances will be deployed to
+Accounts:
+  - 123456789123  # account-dev
+  - 456789123456  # account-stg
+  - 789123456789  # account-prod
+
+# List of stack set instances that are going to be deployed
+# These are all stack sets which supported by this script
+# By commenting a particular stack set, the stack set will be excluded in all operations of this script
+StackSets:
+  - 'default-s3-buckets'
+  - 'default-service-roles'
+  - 'default-guardduty'
+  - 'default-config'
+  - 'default-cloudtrail'
+  - 'default-superadmin-role'
+  - 'default-terraform-state-management'
+  - 'default-cloudconformity-monitoring'
+
+# List of Account Administrators ARN
+# Only required when 'default-superadmin-role' is stated above at 'StackSets' section
+AccountAdministrators:
+  - 'arn:aws:sts::234567891234:assumed-role/SAML/your.email@traveloka.com'
+  - 'arn:aws:sts::234567891234:assumed-role/SAML/your.email.again@traveloka.com'
+
+# Parameter Overrides for CloudConformity
+# Only required when 'default-cloudconformity-monitoring' is stated above at 'StackSets' section
+# Should match with number of Accounts stated above (ORDER MATTERS)
+#
+# ATTENTION: it seems that cloudconformity regenerate the token every unknown frequency, check and update the value
+#            before creating the stack set instances
+ParameterOverrides:
+  default-cloudconformity-monitoring:
+    CloudConformityAuthenticationToken:
+      - 'sdkfjkjKSDJFkljskdjfkjJHi7sydfKUHJFKhd8978989JHUisdhfdshiflHILHh98789sdfiHJKDSHf98y7idshfliy8HLhfklsdhlr395sdk'
+      - 'sdkfjkjKSDJFkljskdjfkjJHi7sydfKUHJFKhd8978989JHUisdhfdshiflHILHh98789sdfiHJKDSHf98y7idshfliy8HLhfklsdhlr395sdk'
+      - 'sdkfjkjKSDJFkljskdjfkjJHi7sydfKUHJFKhd8978989JHUisdhfdshiflHILHh98789sdfiHJKDSHf98y7idshfliy8HLhfklsdhlr395sdk'

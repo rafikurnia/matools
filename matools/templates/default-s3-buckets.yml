@@ -1,0 +1,217 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: 'SPECIAL RESOURCES. DO NOT TOUCH. This StackSet will create several S3 Buckets that are used for scaffolding resources.'
+
+Resources:
+  S3LoggingBucket:
+    Type: 'AWS::S3::Bucket'
+    DeletionPolicy: 'Retain'
+    Properties:
+      BucketName: !Sub 'default-s3-logs-${AWS::Region}-${AWS::AccountId}'
+      AccessControl: 'LogDeliveryWrite'
+#      BucketEncryption:
+#        ServerSideEncryptionConfiguration:
+#          - ServerSideEncryptionByDefault:
+#              SSEAlgorithm: 'AES256'
+      VersioningConfiguration:
+        Status: 'Enabled'
+      Tags:
+        - Key: 'Name'
+          Value: !Sub 'default-s3-logs-${AWS::Region}-${AWS::AccountId}'
+        - Key: 'Environment'
+          Value: 'special'
+        - Key: 'Description'
+          Value: 'S3 Bucket to store all logs from AWS S3.' 
+
+  CloudFrontLoggingBucket:
+    Type: 'AWS::S3::Bucket'
+    DeletionPolicy: 'Retain'
+    Properties:
+      BucketName: !Sub 'default-cloudfront-logs-${AWS::Region}-${AWS::AccountId}'
+      AccessControl: 'Private'
+#      BucketEncryption:
+#        ServerSideEncryptionConfiguration:
+#          - ServerSideEncryptionByDefault:
+#              SSEAlgorithm: 'AES256'
+      LoggingConfiguration:
+        DestinationBucketName: !Ref S3LoggingBucket
+        LogFilePrefix: !Sub 'default-cloudfront-logs-${AWS::Region}-${AWS::AccountId}/'
+      VersioningConfiguration:
+        Status: 'Enabled'
+      Tags:
+        - Key: 'Name'
+          Value: !Sub 'default-cloudfront-logs-${AWS::Region}-${AWS::AccountId}'
+        - Key: 'Environment'
+          Value: 'special'
+        - Key: 'Description'
+          Value: 'S3 Bucket to store all logs from Amazon CloudFront.' 
+  
+  ELBLoggingBucket:
+    Type: 'AWS::S3::Bucket'
+    DeletionPolicy: 'Retain'
+    Properties:
+      BucketName: !Sub 'default-elb-logs-${AWS::Region}-${AWS::AccountId}'
+      AccessControl: 'Private'
+#      BucketEncryption:
+#        ServerSideEncryptionConfiguration:
+#          - ServerSideEncryptionByDefault:
+#              SSEAlgorithm: 'AES256'
+      LoggingConfiguration:
+        DestinationBucketName: !Ref S3LoggingBucket
+        LogFilePrefix: !Sub 'default-elb-logs-${AWS::Region}-${AWS::AccountId}/'
+      VersioningConfiguration:
+        Status: 'Enabled'
+      Tags:
+        - Key: 'Name'
+          Value: !Sub 'default-elb-logs-${AWS::Region}-${AWS::AccountId}'
+        - Key: 'Environment'
+          Value: 'special'
+        - Key: 'Description'
+          Value: 'S3 Bucket to store all logs from AWS ELB.'
+
+  ELBLoggingBucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref ELBLoggingBucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              AWS:
+                - 'arn:aws:iam::114774131450:root'
+            Action: 
+              - 's3:PutObject'
+            Resource:
+              - !Sub 'arn:aws:s3:::${ELBLoggingBucket}/*'
+
+  ConfigBucket:
+    Type: 'AWS::S3::Bucket'
+    DeletionPolicy: 'Retain'
+    Properties:
+      BucketName: !Sub 'default-config-${AWS::Region}-${AWS::AccountId}'
+      AccessControl: 'Private'
+#      BucketEncryption:
+#        ServerSideEncryptionConfiguration:
+#          - ServerSideEncryptionByDefault:
+#              SSEAlgorithm: 'AES256'
+      LoggingConfiguration:
+        DestinationBucketName: !Ref S3LoggingBucket
+        LogFilePrefix: !Sub 'default-config-${AWS::Region}-${AWS::AccountId}/'
+      VersioningConfiguration:
+        Status: 'Enabled'
+      Tags:
+        - Key: 'Name'
+          Value: !Sub 'default-config-logs-${AWS::Region}-${AWS::AccountId}'
+        - Key: 'Environment'
+          Value: 'special'
+        - Key: 'Description'
+          Value: 'S3 Bucket to store all logs from AWS Config.'
+
+  ConfigBucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref ConfigBucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: 'AllowConfigToGetBucketAcl'
+            Effect: 'Allow'
+            Principal:
+              Service:
+                - 'config.amazonaws.com'
+            Action:
+              - 's3:GetBucketAcl'
+            Resource:
+              - !Sub 'arn:aws:s3:::${ConfigBucket}'
+          - Sid: AllowConfigToPutObject
+            Effect: Allow
+            Principal:
+              Service:
+                - config.amazonaws.com
+            Action:
+              - s3:PutObject
+            Resource:
+              - !Sub 'arn:aws:s3:::${ConfigBucket}/AWSLogs/${AWS::AccountId}/*'
+
+  TrailBucket:
+    Type: 'AWS::S3::Bucket'
+    DeletionPolicy: 'Retain'
+    Properties:
+      BucketName: !Sub 'default-cloudtrail-${AWS::Region}-${AWS::AccountId}'
+      AccessControl: 'Private'
+#      BucketEncryption:
+#        ServerSideEncryptionConfiguration:
+#          - ServerSideEncryptionByDefault:
+#              SSEAlgorithm: 'AES256'
+      LoggingConfiguration:
+        DestinationBucketName: !Ref S3LoggingBucket
+        LogFilePrefix: !Sub 'default-cloudtrail-${AWS::Region}-${AWS::AccountId}/'
+      VersioningConfiguration:
+        Status: 'Enabled'
+      Tags:
+        - Key: 'Name'
+          Value: !Sub 'default-cloudtrail-logs-${AWS::Region}-${AWS::AccountId}'
+        - Key: 'Environment'
+          Value: 'special'
+        - Key: 'Description'
+          Value: 'S3 Bucket to store all logs from CloudTrail.'
+
+  TrailBucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref TrailBucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: 'AllowCloudTrailToGetBucketAcl'
+            Effect: 'Allow'
+            Principal:
+              Service:
+                - 'cloudtrail.amazonaws.com'
+            Action:
+              - 's3:GetBucketAcl'
+            Resource:
+              - !Sub 'arn:aws:s3:::${TrailBucket}'
+          - Sid: 'AllowCloudTrailToPutObject'
+            Effect: 'Allow'
+            Principal:
+              Service:
+                - 'cloudtrail.amazonaws.com'
+            Action:
+              - 's3:PutObject'
+            Resource: !Sub 'arn:aws:s3:::${TrailBucket}/AWSLogs/${AWS::AccountId}/*'
+            Condition:
+              StringEquals:
+                s3:x-amz-acl : 'bucket-owner-full-control'
+
+Outputs:
+  S3LoggingBucketName:
+    Description: 'The name of the bucket for AWS S3 Logging.'
+    Value: !Ref S3LoggingBucket
+    Export:
+      Name: 'default-s3-logging-bucket-name'
+
+  CloudFrontLoggingBucketName:
+    Description: 'The name of the bucket for Amazon CloudFront Logging.'
+    Value: !Ref CloudFrontLoggingBucket
+    Export:
+      Name: 'default-cloudfront-logging-bucket-name'
+
+  ELBLoggingBucketName:
+    Description: 'The name of the bucket for AWS ELB.'
+    Value: !Ref ELBLoggingBucket
+    Export:
+      Name: 'default-elb-logging-bucket-name'
+
+  ConfigBucketName:
+    Description: 'The name of the bucket for AWS Config.'
+    Value: !Ref ConfigBucket
+    Export:
+      Name: 'default-config-bucket-name'
+
+  CloudTrailBucketName:
+    Description: 'The name of the bucket for AWS CloudTrail.'
+    Value: !Ref TrailBucket
+    Export:
+      Name: 'default-cloudtrail-bucket-name'

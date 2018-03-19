@@ -1,0 +1,34 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: 'SPECIAL RESOURCES. DO NOT TOUCH. This StackSet will create a temporary IAM Role for account administrator.'
+
+Parameters: 
+  AdministratorRoleARNs: 
+    Description: "Comma-delimited list of Administrator Role ARNs"
+    Type: CommaDelimitedList
+
+Resources:
+  TemporarySuperAdminRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: 'TemporarySuperAdmin'
+      Path: '/'
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Ref AdministratorRoleARNs
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
+
+Outputs:
+  TemporarySuperAdminRoleARN:
+    Description: 'The ARN of the role for for account administrator.'
+    Value: !GetAtt 
+      - TemporarySuperAdminRole
+      - Arn
+    Export:
+      Name: 'default-temporary-superadmin-role'

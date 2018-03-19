@@ -1,0 +1,63 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: 'SPECIAL RESOURCES. DO NOT TOUCH. This StackSet will create S3 Bucket and DynamoDB Table for Terraform State management.'
+
+Resources: 
+  TerraformStateBucket:
+    Type: 'AWS::S3::Bucket'
+    DeletionPolicy: 'Retain'
+    Properties:
+      BucketName: !Sub 'default-terraform-state-${AWS::Region}-${AWS::AccountId}'
+      AccessControl: 'Private'
+#      BucketEncryption:
+#        ServerSideEncryptionConfiguration:
+#          - ServerSideEncryptionByDefault:
+#              SSEAlgorithm: 'AES256'
+      LoggingConfiguration:
+        DestinationBucketName: !ImportValue 'default-s3-logging-bucket-name'
+        LogFilePrefix: !Sub 'default-terraform-state-${AWS::Region}-${AWS::AccountId}/'
+      VersioningConfiguration:
+        Status: 'Enabled'
+      Tags:
+        - Key: 'Name'
+          Value: !Sub 'default-terraform-state-${AWS::Region}-${AWS::AccountId}'
+        - Key: 'Environment'
+          Value: 'special'
+        - Key: 'Description'
+          Value: 'S3 Bucket to store all terraform state files.'
+
+  TerraformStateLockingTable: 
+    Type: 'AWS::DynamoDB::Table'
+    Properties: 
+      AttributeDefinitions: 
+        - AttributeName: 'LockID'
+          AttributeType: 'S'
+      KeySchema: 
+        - AttributeName: 'LockID'
+          KeyType: 'HASH'
+      ProvisionedThroughput: 
+        ReadCapacityUnits: '1'
+        WriteCapacityUnits: '1'
+      TableName: !Sub 'default-terraform-state-${AWS::Region}-${AWS::AccountId}'
+      Tags:
+        - Key: 'Name'
+          Value: !Sub 'default-terraform-state-${AWS::Region}-${AWS::AccountId}'
+        - Key: 'Environment'
+          Value: 'special'
+        - Key: 'Description'
+          Value: 'DynamoDB Table to store terraform state locking status.'
+      
+Outputs:
+  TerraformStateBucketName:
+    Description: 'The name of the bucket used for storing Terraform state files.'
+    Value: !Ref TerraformStateBucket
+    Export:
+      Name: 'default-terraform-state-bucket-name'
+
+  TerraformStateLockingTableARN:
+    Description: 'The ARN of the table used for Terraform state locking.'
+    Value: !GetAtt 
+        - TerraformStateLockingTable
+        - Arn
+    Export:
+      Name: 'default-terraform-state-table-arn'

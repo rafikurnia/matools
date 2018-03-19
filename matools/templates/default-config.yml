@@ -1,0 +1,20 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: 'SPECIAL RESOURCES. DO NOT TOUCH. This StackSet will enable AWS Config.'
+
+Resources:
+  ConfigRecorder:
+    Type: 'AWS::Config::ConfigurationRecorder'
+    Properties:
+      RoleARN: !Sub 'arn:aws:iam::${AWS::AccountId}:role/service-role/config.amazonaws.com/ServiceRoleForConfig_default-config'
+      RecordingGroup:
+        AllSupported: True
+        IncludeGlobalResourceTypes: True
+        ResourceTypes: !Ref AWS::NoValue
+
+  ConfigDeliveryChannel:
+    Type: AWS::Config::DeliveryChannel
+    Properties:
+      Name: 'default-config-delivery-channel'
+      ConfigSnapshotDeliveryProperties:
+        DeliveryFrequency: 'One_Hour'
+      S3BucketName: !Sub 'default-config-ap-southeast-1-${AWS::AccountId}'

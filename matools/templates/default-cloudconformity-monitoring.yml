@@ -1,0 +1,874 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: 'SPECIAL RESOURCES. DO NOT TOUCH. This StackSet will enable CloudConformity Real-Time Threat Monitoring.'
+
+Parameters:
+  CloudConformityAuthenticationToken:
+    Description: 'The Cloud Conformity authentication token'
+    Type: String
+
+Conditions:
+  CreateGlobalResources: !Equals [ !Ref 'AWS::Region', 'us-east-1' ]
+
+Resources:
+  ConsoleLoginMonitor:
+    Type: 'AWS::Events::Rule'
+    Condition: CreateGlobalResources
+    Properties:
+      Name: ConsoleLoginMonitor
+      Description: ConsoleLoginMonitor
+      EventPattern:
+        detail-type:
+          - 'AWS Console Sign In via CloudTrail'
+        detail:
+          eventName:
+            - 'ConsoleLogin'
+      State: 'ENABLED'
+      Targets:
+         -
+           Arn:
+             Fn::GetAtt:
+               - 'EventHandler'
+               - 'Arn'
+           Id: 'TargetFunctionV1'
+  ConsoleLoginMonitorLambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Condition: CreateGlobalResources
+    Properties:
+      FunctionName:
+        Ref: 'EventHandler'
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn:
+        Fn::GetAtt:
+          - 'ConsoleLoginMonitor'
+          - 'Arn'
+
+  RootUserMonitor:
+    Type: 'AWS::Events::Rule'
+    Condition: CreateGlobalResources
+    Properties:
+      Name: RootUserMonitor
+      Description: RootUserMonitor
+      EventPattern:
+        detail-type:
+          - 'AWS Console Sign In via CloudTrail'
+        detail:
+          userIdentity:
+            type:
+              - 'Root'
+      State: 'ENABLED'
+      Targets:
+         -
+           Arn:
+             Fn::GetAtt:
+               - 'EventHandler'
+               - 'Arn'
+           Id: 'TargetFunctionV1'
+  RootUserMonitorLambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Condition: CreateGlobalResources
+    Properties:
+      FunctionName:
+        Ref: 'EventHandler'
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn:
+        Fn::GetAtt:
+          - 'RootUserMonitor'
+          - 'Arn'
+
+  AutoScalingMonitor:
+    Type: 'AWS::Events::Rule'
+    Properties:
+      Name: AutoScalingMonitor
+      Description: AutoScalingMonitor
+      EventPattern:
+        detail-type:
+          - 'AWS API Call via CloudTrail'
+        detail:
+          eventSource:
+            - 'autoscaling.amazonaws.com'
+      Targets:
+         -
+           Arn:
+             Fn::GetAtt:
+               - 'EventHandler'
+               - 'Arn'
+           Id: 'TargetFunctionV1'
+  AutoScalingMonitorLambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName:
+        Ref: 'EventHandler'
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn:
+        Fn::GetAtt:
+          - 'AutoScalingMonitor'
+          - 'Arn'
+
+  ACMMonitor:
+    Type: 'AWS::Events::Rule'
+    Properties:
+      Name: ACMMonitor
+      Description: ACMMonitor
+      EventPattern:
+        detail-type:
+          - 'AWS API Call via CloudTrail'
+        detail:
+          eventSource:
+            - 'acm.amazonaws.com'
+      Targets:
+         -
+           Arn:
+             Fn::GetAtt:
+               - 'EventHandler'
+               - 'Arn'
+           Id: 'TargetFunctionV1'
+  ACMMonitorLambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName:
+        Ref: 'EventHandler'
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn:
+        Fn::GetAtt:
+          - 'ACMMonitor'
+          - 'Arn'
+
+  CloudFormationMonitor:
+    Type: 'AWS::Events::Rule'
+    Properties:
+      Name: CloudFormationMonitor
+      Description: CloudFormationMonitor
+      EventPattern:
+        detail-type:
+          - 'AWS API Call via CloudTrail'
+        detail:
+          eventSource:
+            - 'cloudformation.amazonaws.com'
+          eventName:
+            - 'CreateStack'
+            - 'DeleteStack'
+            - 'SetStackPolicy'
+            - 'UpdateStack'
+      Targets:
+         -
+           Arn:
+             Fn::GetAtt:
+               - 'EventHandler'
+               - 'Arn'
+           Id: 'TargetFunctionV1'
+  CloudFormationMonitorLambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName:
+        Ref: 'EventHandler'
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn:
+        Fn::GetAtt:
+          - 'CloudFormationMonitor'
+          - 'Arn'
+
+  CloudFrontMonitor:
+    Type: 'AWS::Events::Rule'
+    Properties:
+      Name: CloudFrontMonitor
+      Description: CloudFrontMonitor
+      EventPattern:
+        detail-type:
+          - 'AWS API Call via CloudTrail'
+        detail:
+          eventSource:
+            - 'cloudfront.amazonaws.com'
+      Targets:
+         -
+           Arn:
+             Fn::GetAtt:
+               - 'EventHandler'
+               - 'Arn'
+           Id: 'TargetFunctionV1'
+  CloudFrontMonitorLambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName:
+        Ref: 'EventHandler'
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn:
+        Fn::GetAtt:
+          - 'CloudFrontMonitor'
+          - 'Arn'
+
+  CloudHSMMonitor:
+    Type: 'AWS::Events::Rule'
+    Properties:
+      Name: CloudHSMMonitor
+      Description: CloudHSMMonitor
+      EventPattern:
+        detail-type:
+          - 'AWS API Call via CloudTrail'
+        detail:
+          eventSource:
+            - 'cloudhsm.amazonaws.com'
+      Targets:
+         -
+           Arn:
+             Fn::GetAtt:
+               - 'EventHandler'
+               - 'Arn'
+           Id: 'TargetFunctionV1'
+  CloudHSMMonitorLambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName:
+        Ref: 'EventHandler'
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn:
+        Fn::GetAtt:
+          - 'CloudHSMMonitor'
+          - 'Arn'
+
+  CloudTrailMonitor:
+    Type: 'AWS::Events::Rule'
+    Properties:
+      Name: CloudTrailMonitor
+      Description: CloudTrailMonitor
+      EventPattern:
+        detail-type:
+          - 'AWS API Call via CloudTrail'
+        detail:
+          eventSource:
+            - 'cloudtrail.amazonaws.com'
+          eventName:
+            - 'AddTags'
+            - 'CreateTrail'
+            - 'DeleteTrail'
+            - 'RemoveTags'
+            - 'UpdateTrail'
+      Targets:
+         -
+           Arn:
+             Fn::GetAtt:
+               - 'EventHandler'
+               - 'Arn'
+           Id: 'TargetFunctionV1'
+  CloudTrailMonitorLambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName:
+        Ref: 'EventHandler'
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn:
+        Fn::GetAtt:
+          - 'CloudTrailMonitor'
+          - 'Arn'
+
+  DirectConnectMonitor:
+    Type: 'AWS::Events::Rule'
+    Properties:
+      Name: DirectConnectMonitor
+      Description: DirectConnectMonitor
+      EventPattern:
+        detail-type:
+          - 'AWS API Call via CloudTrail'
+        detail:
+          eventSource:
+            - 'directconnect.amazonaws.com'
+      Targets:
+         -
+           Arn:
+             Fn::GetAtt:
+               - 'EventHandler'
+               - 'Arn'
+           Id: 'TargetFunctionV1'
+  DirectConnectMonitorLambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName:
+        Ref: 'EventHandler'
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn:
+        Fn::GetAtt:
+          - 'DirectConnectMonitor'
+          - 'Arn'
+
+  DynamoDBMonitor:
+    Type: 'AWS::Events::Rule'
+    Properties:
+      Name: DynamoDBMonitor
+      Description: DynamoDBMonitor
+      EventPattern:
+        detail-type:
+          - 'AWS API Call via CloudTrail'
+        detail:
+          eventSource:
+            - 'dynamodb.amazonaws.com'
+      Targets:
+         -
+           Arn:
+             Fn::GetAtt:
+               - 'EventHandler'
+               - 'Arn'
+           Id: 'TargetFunctionV1'
+  DynamoDBMonitorLambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName:
+        Ref: 'EventHandler'
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn:
+        Fn::GetAtt:
+          - 'DynamoDBMonitor'
+          - 'Arn'
+
+  EC2Monitor:
+    Type: 'AWS::Events::Rule'
+    Properties:
+      Name: EC2Monitor
+      Description: EC2Monitor
+      EventPattern:
+        detail-type:
+          - 'AWS API Call via CloudTrail'
+        detail:
+          eventSource:
+            - 'ec2.amazonaws.com'
+      Targets:
+         -
+           Arn:
+             Fn::GetAtt:
+               - 'EventHandler'
+               - 'Arn'
+           Id: 'TargetFunctionV1'
+  EC2MonitorLambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName:
+        Ref: 'EventHandler'
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn:
+        Fn::GetAtt:
+          - 'EC2Monitor'
+          - 'Arn'
+
+  ElastiCacheMonitor:
+    Type: 'AWS::Events::Rule'
+    Properties:
+      Name: ElastiCacheMonitor
+      Description: ElastiCacheMonitor
+      EventPattern:
+        detail-type:
+          - 'AWS API Call via CloudTrail'
+        detail:
+          eventSource:
+            - 'elasticache.amazonaws.com'
+      Targets:
+         -
+           Arn:
+             Fn::GetAtt:
+               - 'EventHandler'
+               - 'Arn'
+           Id: 'TargetFunctionV1'
+  ElastiCacheMonitorLambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName:
+        Ref: 'EventHandler'
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn:
+        Fn::GetAtt:
+          - 'ElastiCacheMonitor'
+          - 'Arn'
+
+  ElasticLoadBalancingMonitor:
+    Type: 'AWS::Events::Rule'
+    Properties:
+      Name: ElasticLoadBalancingMonitor
+      Description: ElasticLoadBalancingMonitor
+      EventPattern:
+        detail-type:
+          - 'AWS API Call via CloudTrail'
+        detail:
+          eventSource:
+            - 'elasticloadbalancing.amazonaws.com'
+      Targets:
+         -
+           Arn:
+             Fn::GetAtt:
+               - 'EventHandler'
+               - 'Arn'
+           Id: 'TargetFunctionV1'
+  ElasticLoadBalancingMonitorLambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName:
+        Ref: 'EventHandler'
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn:
+        Fn::GetAtt:
+          - 'ElasticLoadBalancingMonitor'
+          - 'Arn'
+
+  ESMonitor:
+    Type: 'AWS::Events::Rule'
+    Properties:
+      Name: ESMonitor
+      Description: ESMonitor
+      EventPattern:
+        detail-type:
+          - 'AWS API Call via CloudTrail'
+        detail:
+          eventSource:
+            - 'es.amazonaws.com'
+      Targets:
+         -
+           Arn:
+             Fn::GetAtt:
+               - 'EventHandler'
+               - 'Arn'
+           Id: 'TargetFunctionV1'
+  ESMonitorLambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName:
+        Ref: 'EventHandler'
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn:
+        Fn::GetAtt:
+          - 'ESMonitor'
+          - 'Arn'
+
+  IAMMonitor:
+    Type: 'AWS::Events::Rule'
+    Condition: CreateGlobalResources
+    Properties:
+      Name: IAMMonitor
+      Description: IAMMonitor
+      EventPattern:
+        detail-type:
+          - 'AWS API Call via CloudTrail'
+        detail:
+          eventSource:
+            - 'iam.amazonaws.com'
+      Targets:
+         -
+           Arn:
+             Fn::GetAtt:
+               - 'EventHandler'
+               - 'Arn'
+           Id: 'TargetFunctionV1'
+  IAMMonitorLambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Condition: CreateGlobalResources
+    Properties:
+      FunctionName:
+        Ref: 'EventHandler'
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn:
+        Fn::GetAtt:
+          - 'IAMMonitor'
+          - 'Arn'
+
+  KMSMonitor:
+    Type: 'AWS::Events::Rule'
+    Properties:
+      Name: KMSMonitor
+      Description: KMSMonitor
+      EventPattern:
+        detail-type:
+          - 'AWS API Call via CloudTrail'
+        detail:
+          eventSource:
+            - 'kms.amazonaws.com'
+          eventName:
+            - 'CreateAlias'
+            - 'CreateGrant'
+            - 'CreateKey'
+            - 'DeleteAlias'
+            - 'DisableKey'
+            - 'DisableKeyRotation'
+            - 'EnableKey'
+            - 'EnableKeyRotation'
+            - 'PutKeyPolicy'
+            - 'RetireGrant'
+            - 'UpdateKeyDescription'
+      Targets:
+         -
+           Arn:
+             Fn::GetAtt:
+               - 'EventHandler'
+               - 'Arn'
+           Id: 'TargetFunctionV1'
+  KMSMonitorLambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName:
+        Ref: 'EventHandler'
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn:
+        Fn::GetAtt:
+          - 'KMSMonitor'
+          - 'Arn'
+
+  RDSMonitor:
+    Type: 'AWS::Events::Rule'
+    Properties:
+      Name: RDSMonitor
+      Description: RDSMonitor
+      EventPattern:
+        detail-type:
+          - 'AWS API Call via CloudTrail'
+        detail:
+          eventSource:
+            - 'rds.amazonaws.com'
+      Targets:
+         -
+           Arn:
+             Fn::GetAtt:
+               - 'EventHandler'
+               - 'Arn'
+           Id: 'TargetFunctionV1'
+  RDSMonitorLambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName:
+        Ref: 'EventHandler'
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn:
+        Fn::GetAtt:
+          - 'RDSMonitor'
+          - 'Arn'
+
+  GuardDutyMonitor:
+    Type: 'AWS::Events::Rule'
+    Properties:
+      Name: GuardDutyMonitor
+      Description: GuardDutyMonitor
+      EventPattern:
+        detail-type:
+          - 'AWS API Call via CloudTrail'
+        detail:
+          eventSource:
+            - 'aws.guardduty'
+      Targets:
+         -
+           Arn:
+             Fn::GetAtt:
+               - 'EventHandler'
+               - 'Arn'
+           Id: 'TargetFunctionV1'
+  GuardDutyMonitorLambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName:
+        Ref: 'EventHandler'
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn:
+        Fn::GetAtt:
+          - 'GuardDutyMonitor'
+          - 'Arn'
+
+  HealthMonitor:
+    Type: 'AWS::Events::Rule'
+    Condition: CreateGlobalResources
+    Properties:
+      Name: HealthMonitor
+      Description: HealthMonitor
+      EventPattern:
+        detail-type:
+          - 'AWS API Call via CloudTrail'
+        detail:
+          eventSource:
+            - 'aws.health'
+      Targets:
+         -
+           Arn:
+             Fn::GetAtt:
+               - 'EventHandler'
+               - 'Arn'
+           Id: 'TargetFunctionV1'
+  HealthMonitorLambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Condition: CreateGlobalResources
+    Properties:
+      FunctionName:
+        Ref: 'EventHandler'
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn:
+        Fn::GetAtt:
+          - 'HealthMonitor'
+          - 'Arn'
+
+  RedshiftMonitor:
+    Type: 'AWS::Events::Rule'
+    Properties:
+      Name: RedshiftMonitor
+      Description: RedshiftMonitor
+      EventPattern:
+        detail-type:
+          - 'AWS API Call via CloudTrail'
+        detail:
+          eventSource:
+            - 'redshift.amazonaws.com'
+      Targets:
+         -
+           Arn:
+             Fn::GetAtt:
+               - 'EventHandler'
+               - 'Arn'
+           Id: 'TargetFunctionV1'
+  RedshiftMonitorLambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName:
+        Ref: 'EventHandler'
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn:
+        Fn::GetAtt:
+          - 'RedshiftMonitor'
+          - 'Arn'
+
+  Route53Monitor:
+    Type: 'AWS::Events::Rule'
+    Properties:
+      Name: Route53Monitor
+      Description: Route53Monitor
+      EventPattern:
+        detail-type:
+          - 'AWS API Call via CloudTrail'
+        detail:
+          eventSource:
+            - 'route53.amazonaws.com'
+      Targets:
+         -
+           Arn:
+             Fn::GetAtt:
+               - 'EventHandler'
+               - 'Arn'
+           Id: 'TargetFunctionV1'
+  Route53MonitorLambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName:
+        Ref: 'EventHandler'
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn:
+        Fn::GetAtt:
+          - 'Route53Monitor'
+          - 'Arn'
+
+  S3Monitor:
+    Type: 'AWS::Events::Rule'
+    Properties:
+      Name: S3Monitor
+      Description: S3Monitor
+      EventPattern:
+        detail-type:
+          - 'AWS API Call via CloudTrail'
+        detail:
+          eventSource:
+            - 's3.amazonaws.com'
+          eventName:
+            - 'DeleteBucket'
+            - 'DeleteBucketCors'
+            - 'DeleteBucketLifecycle'
+            - 'DeleteBucketPolicy'
+            - 'DeleteBucketReplication'
+            - 'DeleteBucketTagging'
+            - 'DeleteBucketWebsite'
+            - 'CreateBucket'
+            - 'PutBucketAcl'
+            - 'PutBucketCors'
+            - 'PutBucketLifecycle'
+            - 'PutBucketPolicy'
+            - 'PutBucketLogging'
+            - 'PutBucketNotification'
+            - 'PutBucketReplication'
+            - 'PutBucketTagging'
+            - 'PutBucketRequestPayment'
+            - 'PutBucketVersioning'
+            - 'PutBucketWebsite'
+      Targets:
+         -
+           Arn:
+             Fn::GetAtt:
+               - 'EventHandler'
+               - 'Arn'
+           Id: 'TargetFunctionV1'
+  S3MonitorLambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName:
+        Ref: 'EventHandler'
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn:
+        Fn::GetAtt:
+          - 'S3Monitor'
+          - 'Arn'
+
+  SESMonitor:
+    Type: 'AWS::Events::Rule'
+    Properties:
+      Name: SESMonitor
+      Description: SESMonitor
+      EventPattern:
+        detail-type:
+          - 'AWS API Call via CloudTrail'
+        detail:
+          eventSource:
+            - 'ses.amazonaws.com'
+      Targets:
+         -
+           Arn:
+             Fn::GetAtt:
+               - 'EventHandler'
+               - 'Arn'
+           Id: 'TargetFunctionV1'
+  SESMonitorLambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName:
+        Ref: 'EventHandler'
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn:
+        Fn::GetAtt:
+          - 'SESMonitor'
+          - 'Arn'
+
+  SQSMonitor:
+    Type: 'AWS::Events::Rule'
+    Properties:
+      Name: SQSMonitor
+      Description: SQSMonitor
+      EventPattern:
+        detail-type:
+          - 'AWS API Call via CloudTrail'
+        detail:
+          eventSource:
+            - 'sqs.amazonaws.com'
+      Targets:
+         -
+           Arn:
+             Fn::GetAtt:
+               - 'EventHandler'
+               - 'Arn'
+           Id: 'TargetFunctionV1'
+  SQSMonitorLambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName:
+        Ref: 'EventHandler'
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn:
+        Fn::GetAtt:
+          - 'SQSMonitor'
+          - 'Arn'
+
+  WAFMonitor:
+    Type: 'AWS::Events::Rule'
+    Properties:
+      Name: WAFMonitor
+      Description: WAFMonitor
+      EventPattern:
+        detail-type:
+          - 'AWS API Call via CloudTrail'
+        detail:
+          eventSource:
+            - 'waf.amazonaws.com'
+      Targets:
+         -
+           Arn:
+             Fn::GetAtt:
+               - 'EventHandler'
+               - 'Arn'
+           Id: 'TargetFunctionV1'
+  WAFMonitorLambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName:
+        Ref: 'EventHandler'
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn:
+        Fn::GetAtt:
+          - 'WAFMonitor'
+          - 'Arn'
+
+  EventHandler:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        ZipFile: >
+          var https = require('https');
+          exports.handler = function(event, context, callback) {
+            // Preparing the payload to send
+            var toSend = {
+              Records: [event.detail]
+            };
+            var post_options = {
+              host: process.env.CloudConformityMonitoringEndpoint,
+              port: '443',
+              path: '/v1/monitoring/ingest',
+              method: 'POST',
+              headers: {
+                // Setting the authorisation header with a Cloud Conformity specific token
+                'Authorization': 'Bearer ' + process.env.CloudConformityAuthenticationToken,
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(JSON.stringify(toSend))
+              }
+            };
+            var req = https.request(post_options, function(res) {
+              res.setEncoding('utf8');
+              res.on('error', function (e) {
+                callback(e)
+              });
+              res.on('timeout', function (e) {
+                callback(e)
+              });
+              res.on('end', function () {
+                  callback(null, 'ok');
+              });
+              console.log('statusCode:', res.statusCode);
+            });
+            // Sending the payload to Cloud Conformity API ingestor
+            req.end(JSON.stringify(toSend));
+          };
+      Description: "CloudWatch Event Handler to send data to CloudConformity for Real-Time Threat Monitoring."
+      Environment:
+          Variables:
+              CloudConformityMonitoringEndpoint: "eu-west-1-rtm.cloudconformity.com"
+              CloudConformityAuthenticationToken: !Ref CloudConformityAuthenticationToken
+      FunctionName: CloudConformityMonitoring
+      Handler: index.handler
+      MemorySize: 128
+      Role: !Sub 'arn:aws:iam::${AWS::AccountId}:role/service-role/lambda.amazonaws.com/ServiceRoleForLambda_default-cloudconformity-monitoring'
+      Runtime: nodejs6.10
+      Timeout: 30
+      Tags:
+        - Key: 'Name'
+          Value: 'CloudConformityMonitoring'
+        - Key: 'Environment'
+          Value: 'special'
+        - Key: 'Description'
+          Value: 'CloudWatch Event Handler to send data to CloudConformity for Real-Time Threat Monitoring.'

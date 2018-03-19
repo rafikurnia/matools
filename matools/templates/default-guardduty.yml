@@ -1,0 +1,8 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: 'SPECIAL RESOURCES. DO NOT TOUCH. This StackSet will enable Amazon GuardDuty.'
+
+Resources:
+  GuardDutyDetector:
+    Type: 'AWS::GuardDuty::Detector'
+    Properties:
+      Enable: True
