@@ -9,10 +9,10 @@ Resources:
     Properties:
       BucketName: !Sub 'default-s3-logs-${AWS::Region}-${AWS::AccountId}'
       AccessControl: 'LogDeliveryWrite'
-#      BucketEncryption:
-#        ServerSideEncryptionConfiguration:
-#          - ServerSideEncryptionByDefault:
-#              SSEAlgorithm: 'AES256'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: 'AES256'
       VersioningConfiguration:
         Status: 'Enabled'
       Tags:
@@ -29,10 +29,10 @@ Resources:
     Properties:
       BucketName: !Sub 'default-cloudfront-logs-${AWS::Region}-${AWS::AccountId}'
       AccessControl: 'Private'
-#      BucketEncryption:
-#        ServerSideEncryptionConfiguration:
-#          - ServerSideEncryptionByDefault:
-#              SSEAlgorithm: 'AES256'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: 'AES256'
       LoggingConfiguration:
         DestinationBucketName: !Ref S3LoggingBucket
         LogFilePrefix: !Sub 'default-cloudfront-logs-${AWS::Region}-${AWS::AccountId}/'
@@ -52,10 +52,10 @@ Resources:
     Properties:
       BucketName: !Sub 'default-elb-logs-${AWS::Region}-${AWS::AccountId}'
       AccessControl: 'Private'
-#      BucketEncryption:
-#        ServerSideEncryptionConfiguration:
-#          - ServerSideEncryptionByDefault:
-#              SSEAlgorithm: 'AES256'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: 'AES256'
       LoggingConfiguration:
         DestinationBucketName: !Ref S3LoggingBucket
         LogFilePrefix: !Sub 'default-elb-logs-${AWS::Region}-${AWS::AccountId}/'
@@ -91,10 +91,10 @@ Resources:
     Properties:
       BucketName: !Sub 'default-config-${AWS::Region}-${AWS::AccountId}'
       AccessControl: 'Private'
-#      BucketEncryption:
-#        ServerSideEncryptionConfiguration:
-#          - ServerSideEncryptionByDefault:
-#              SSEAlgorithm: 'AES256'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: 'AES256'
       LoggingConfiguration:
         DestinationBucketName: !Ref S3LoggingBucket
         LogFilePrefix: !Sub 'default-config-${AWS::Region}-${AWS::AccountId}/'
@@ -140,10 +140,10 @@ Resources:
     Properties:
       BucketName: !Sub 'default-cloudtrail-${AWS::Region}-${AWS::AccountId}'
       AccessControl: 'Private'
-#      BucketEncryption:
-#        ServerSideEncryptionConfiguration:
-#          - ServerSideEncryptionByDefault:
-#              SSEAlgorithm: 'AES256'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: 'AES256'
       LoggingConfiguration:
         DestinationBucketName: !Ref S3LoggingBucket
         LogFilePrefix: !Sub 'default-cloudtrail-${AWS::Region}-${AWS::AccountId}/'
