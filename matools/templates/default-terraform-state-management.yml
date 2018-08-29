@@ -9,10 +9,10 @@ Resources:
     Properties:
       BucketName: !Sub 'default-terraform-state-${AWS::Region}-${AWS::AccountId}'
       AccessControl: 'Private'
-#      BucketEncryption:
-#        ServerSideEncryptionConfiguration:
-#          - ServerSideEncryptionByDefault:
-#              SSEAlgorithm: 'AES256'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: 'AES256'
       LoggingConfiguration:
         DestinationBucketName: !ImportValue 'default-s3-logging-bucket-name'
         LogFilePrefix: !Sub 'default-terraform-state-${AWS::Region}-${AWS::AccountId}/'
